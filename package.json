@@ -27,7 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.2.4",
     "@typescript-eslint/parser": "^3.10.1",
-    "@typescript-eslint/typescript-estree": "^3.10.1",
+    "@typescript-eslint/typescript-estree": "^4.0.1",
     "axios": "^0.20.0",
     "glob": "^7.1.6",
     "semver": "^7.3.2"
