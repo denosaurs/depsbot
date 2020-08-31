@@ -1,0 +1,11 @@
+name: "Depbot"
+description: "Check freshness of your deno dependencies"
+author: "Filippo Rossi (qu4k@denosaurs)"
+inputs:
+  milliseconds: # change this
+    required: true
+    description: "input description here"
+    default: "default value if applicable"
+runs:
+  using: "node12"
+  main: "dist/index.js"
