@@ -1,6 +1,10 @@
 import path from "path";
+import vfile from "vfile";
+import reporter from "vfile-reporter";
 
 import { parseProject } from "../src/deps";
+import { Diagnostic } from "../src/diagnostics";
+import { getAllRegistries } from "../src/registries";
 
 test("parse 1", async () => {
   const fixtures = path.resolve(__dirname, "fixtures");
@@ -75,4 +79,43 @@ test("no parse 1", async () => {
   const mods = Object.fromEntries(urls);
 
   expect(mods[path.join(directory, "deps.js")]).toStrictEqual([]);
+});
+
+test("full", async () => {
+  const fixtures = path.resolve(__dirname, "fixtures");
+  const directory = path.join(fixtures, "full");
+
+  const project = await parseProject(directory);
+
+  const registries = getAllRegistries();
+
+  const bigpromises: Promise<vfile.VFile | null>[] = [];
+
+  for (const [fpath, deps] of Object.entries(project)) {
+    const promises: Promise<Diagnostic[]>[] = [];
+    for (const dep of deps) {
+      for (const reg of registries) {
+        if (reg.belongs(dep)) {
+          promises.push(reg.analyze(dep));
+          break;
+        }
+      }
+    }
+    bigpromises.push(
+      (async (): Promise<vfile.VFile | null> => {
+        const result = await Promise.all(promises);
+        if (result.every((_) => _.length === 0)) return null;
+        const file = vfile({ path: fpath });
+        for (const diags of result) {
+          for (const diag of diags) {
+            diag.render(file);
+          }
+        }
+        return file;
+      })()
+    );
+  }
+
+  const vfiles = await Promise.all(bigpromises);
+  console.error(reporter(vfiles.filter((_) => _ !== null)));
 });

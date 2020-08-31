@@ -1,5 +1,6 @@
-import { Diagnostic } from "./types";
+import vfile from "vfile";
 
+import { Diagnostic } from "./types";
 import { Dependency } from "../deps";
 import { Registry } from "../registries";
 
@@ -9,7 +10,13 @@ export class NoOutdated extends Diagnostic {
     super("no-outdated", registry, dep);
     this.latest = latest;
   }
-  render(): string {
-    throw new Error("Method not implemented.");
+  render(file: vfile.VFile): void {
+    const i = this.info;
+    const latest = this.latest;
+    file.message(
+      `${i.name}@${i.version} ~> ${i.name}@${latest}`,
+      this.position(),
+      "no-outdated"
+    );
   }
 }

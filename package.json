@@ -30,7 +30,9 @@
     "@typescript-eslint/typescript-estree": "^4.0.1",
     "axios": "^0.20.0",
     "glob": "^7.1.6",
-    "semver": "^7.3.2"
+    "semver": "^7.3.2",
+    "vfile": "^4.2.0",
+    "vfile-reporter": "^6.0.1"
   },
   "devDependencies": {
     "@types/eslint": "^7.2.2",
