@@ -42,7 +42,7 @@ async function run(): Promise<void> {
     const created = await octokit.checks.create({
       owner,
       repo,
-      name: "depbot@annotations",
+      name: "annotations",
       head_sha: GITHUB_SHA,
       status: "in_progress",
       started_at: new Date().toISOString(),
@@ -50,12 +50,10 @@ async function run(): Promise<void> {
     const checkid = created.data.id;
 
     const dir = path.resolve(relpath);
-    core.debug(dir);
 
     const project = await parseProject(dir);
 
     const registries = getAllRegistries();
-    core.debug(registries.map((_) => _.name).join(","));
 
     const bigpromises: Promise<vfile.VFile | null>[] = [];
 
@@ -88,9 +86,6 @@ async function run(): Promise<void> {
     const result = await Promise.all(bigpromises);
     const files = result.filter((_) => _ !== null) as vfile.VFile[];
 
-    const report = reporter(files);
-    if (report) core.error(report);
-
     if (files.length === 0) {
       await octokit.checks.update({
         owner,
@@ -105,13 +100,17 @@ async function run(): Promise<void> {
       return;
     }
 
+    const report = reporter(files);
+    if (report) core.setFailed(report);
+
     const annotations: Annotation[] = [];
     for (const file of files) {
-      const abspath = file.dirname;
+      const abspath = file.path;
       if (!abspath) continue;
+      const fpath = path.relative(repopath, abspath);
       for (const message of file.messages) {
         annotations.push({
-          path: abspath,
+          path: fpath,
           start_line: message.location.start.line,
           end_line: message.location.end.line,
           annotation_level: "failure",
@@ -119,8 +118,6 @@ async function run(): Promise<void> {
         });
       }
     }
-
-    core.debug(JSON.stringify(annotations, null, 2));
 
     await octokit.checks.update({
       owner,
