@@ -1,5 +1,7 @@
+import fs from "fs";
 import vfile from "vfile";
 import reporter from "vfile-reporter";
+import sort from "vfile-sort";
 
 import { parseProject } from "../deps";
 import { Diagnostic } from "../diagnostics";
@@ -26,17 +28,20 @@ import { getAllRegistries } from "../registries";
       (async (): Promise<vfile.VFile | null> => {
         const result = await Promise.all(promises);
         if (result.every((_) => _.length === 0)) return null;
-        const file = vfile({ path: fpath });
+        const contents = await fs.promises.readFile(fpath, "utf-8");
+        const file = vfile({ path: fpath, contents });
         for (const diags of result) {
           for (const diag of diags) {
             diag.render(file);
           }
         }
+        sort(file);
         return file;
       })()
     );
   }
 
   const vfiles = await Promise.all(bigpromises);
+  // eslint-disable-next-line no-console
   console.error(reporter(vfiles.filter((_) => _ !== null)));
 })();

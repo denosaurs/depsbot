@@ -13,10 +13,13 @@ export class NoOutdated extends Diagnostic {
   render(file: vfile.VFile): void {
     const i = this.info;
     const latest = this.latest;
+
+    const position = this.position();
+
     file.message(
       `${i.name}@${i.version} ~> ${i.name}@${latest}`,
-      this.position(),
-      "no-outdated"
+      position,
+      "outdated"
     );
   }
 }

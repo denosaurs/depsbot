@@ -2,10 +2,17 @@ name: "Depbot"
 description: "Check freshness of your deno dependencies"
 author: "Filippo Rossi (qu4k@denosaurs)"
 inputs:
-  milliseconds: # change this
+  github_token:
+    description: 'Token for the repo. Can be passed in using $\{{ secrets.GITHUB_TOKEN }}'
     required: true
-    description: "input description here"
-    default: "default value if applicable"
+  repo_path:
+    description: 'Path of your repository'
+    default: '.'
+    required: false
+  path:
+    description: 'Relative path in your repository'
+    default: '.'
+    required: false
 runs:
   using: "node12"
   main: "dist/index.js"

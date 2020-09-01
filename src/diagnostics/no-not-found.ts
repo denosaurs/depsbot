@@ -9,6 +9,12 @@ export class NoNotFound extends Diagnostic {
     super("no-not-found", registry, dep);
   }
   render(file: vfile.VFile): void {
-    file.message("no-not-found", this.position(), "no-not-found");
+    const position = this.position();
+    const registry = this.registry.name;
+    file.message(
+      `Not found in the ${registry} registry.`,
+      position,
+      "not-found"
+    );
   }
 }

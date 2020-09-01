@@ -9,6 +9,12 @@ export class NoMalicious extends Diagnostic {
     super("no-malicious", registry, dep);
   }
   render(file: vfile.VFile): void {
-    file.message("no-malicious", this.position(), "no-malicious");
+    const position = this.position();
+    const registry = this.registry.name;
+    file.message(
+      `Reported as malicious in the ${registry} registry.`,
+      position,
+      "nmalicious"
+    );
   }
 }
