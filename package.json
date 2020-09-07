@@ -11,7 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map",
     "test": "jest",
-    "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package && yarn test"
+    "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package"
   },
   "bin": {
     "depsbot": "lib/bin/depsbot.js"

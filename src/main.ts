@@ -2,6 +2,8 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 import path from "path";
+import crypto from "crypto";
+
 import vfile from "vfile";
 import reporter from "vfile-reporter";
 import sort from "vfile-sort";
@@ -9,18 +11,6 @@ import sort from "vfile-sort";
 import { parseProject } from "./deps";
 import { Diagnostic } from "./diagnostics";
 import { getAllRegistries } from "./registries";
-
-interface Annotation {
-  path: string;
-  start_line: number;
-  end_line: number;
-  start_column?: number;
-  end_column?: number;
-  annotation_level: "notice" | "warning" | "failure";
-  message: string;
-  title?: string;
-  raw_details?: string;
-}
 
 async function run(): Promise<void> {
   try {
@@ -41,21 +31,21 @@ async function run(): Promise<void> {
 
     const registries = getAllRegistries();
 
-    const bigpromises: Promise<vfile.VFile | null>[] = [];
+    const vfiles: Promise<vfile.VFile | null>[] = [];
 
     for (const [fpath, deps] of Object.entries(project)) {
-      const promises: Promise<Diagnostic[]>[] = [];
+      const diagnostics: Promise<Diagnostic[]>[] = [];
       for (const dep of deps) {
         for (const reg of registries) {
           if (reg.belongs(dep)) {
-            promises.push(reg.analyze(dep));
+            diagnostics.push(reg.analyze(dep));
             break;
           }
         }
       }
-      bigpromises.push(
+      vfiles.push(
         (async (): Promise<vfile.VFile | null> => {
-          const result = await Promise.all(promises);
+          const result = await Promise.all(diagnostics);
           if (result.every((_) => _.length === 0)) return null;
           const file = vfile({ path: fpath });
           for (const diags of result) {
@@ -69,7 +59,7 @@ async function run(): Promise<void> {
       );
     }
 
-    const result = await Promise.all(bigpromises);
+    const result = await Promise.all(vfiles);
     const files = result.filter((_) => _ !== null) as vfile.VFile[];
 
     const report = reporter(files);
@@ -77,19 +67,23 @@ async function run(): Promise<void> {
 
     const ctx = github.context;
 
-    const annotations: Annotation[] = [];
+    const markdown: string[] = [];
+
     for (const file of files) {
       const abspath = file.path;
       if (!abspath) continue;
       const fpath = path.relative(repopath, abspath);
+      const hash = crypto.createHash("md5").update(fpath).digest("hex");
+      markdown.push(`### ${fpath} - ${hash}`);
       for (const message of file.messages) {
-        annotations.push({
-          path: fpath,
-          start_line: message.location.start.line,
-          end_line: message.location.end.line,
-          annotation_level: "failure",
-          message: message.message,
-        });
+        markdown.push(`- ${message.message}`);
+        // annotations.push({
+        //   path: fpath,
+        //   start_line: message.location.start.line,
+        //   end_line: message.location.end.line,
+        //   annotation_level: "failure",
+        //   message: message.message,
+        // });
       }
     }
 
@@ -98,7 +92,7 @@ async function run(): Promise<void> {
       octokit.issues.createComment({
         ...ctx.repo,
         issue_number: pull.number,
-        body: JSON.stringify(annotations),
+        body: markdown.join("\n"),
       });
     }
   } catch (error) {
