@@ -52,9 +52,9 @@ export function parseModule(path: string, source: string): Dependency[] {
   const ignored: number[] = [];
   if (program.comments) {
     for (const comment of program.comments) {
-      if (comment.value.trim() === "depbot-ignore-file") {
+      if (comment.value.trim() === "depsbot-ignore-file") {
         return [];
-      } else if (comment.value.trim() === "depbot-ignore") {
+      } else if (comment.value.trim() === "depsbot-ignore") {
         ignored.push(comment.loc.end.line + 1);
       }
     }

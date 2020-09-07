@@ -1,4 +1,4 @@
-name: "Depbot"
+name: "Depsbot"
 description: "Check freshness of your deno dependencies"
 author: "Filippo Rossi (qu4k@denosaurs)"
 inputs:

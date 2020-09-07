@@ -49,5 +49,5 @@ export { deferred, delay } from "https://deno.land/std@0.67.0/async/mod.ts";
 export { grant } from "https://deno.land/std@0.67.0/permissions/mod.ts";
 
 // did you mean
-// depbot-ignore
+// depsbot-ignore
 export { default as levenshtein } from "https://deno.land/x/levenshtein@v1.0.1/mod.ts";

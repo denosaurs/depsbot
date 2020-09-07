@@ -1,7 +1,6 @@
 {
-  "name": "depbot",
+  "name": "depsbot",
   "version": "0.1.0",
-  "private": true,
   "description": "Check freshness of your deno dependencies",
   "main": "lib/main.js",
   "scripts": {
@@ -13,6 +12,9 @@
     "package": "ncc build --source-map",
     "test": "jest",
     "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package && yarn test"
+  },
+  "bin": {
+    "depsbot": "lib/bin/depsbot.js"
   },
   "repository": {
     "type": "git",

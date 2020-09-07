@@ -31,23 +31,9 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(GITHUB_TOKEN);
 
-    const { GITHUB_SHA, GITHUB_REPOSITORY, HOME } = process.env;
-    if (!GITHUB_SHA || !GITHUB_TOKEN || !GITHUB_REPOSITORY || !HOME) {
-      throw new Error("SHA & REPOSITORY & TOKEN & HOME must be set");
+    if (!GITHUB_TOKEN) {
+      throw new Error("GITHUB_TOKEN must be set");
     }
-
-    const owner = GITHUB_REPOSITORY.split("/")[0];
-    const repo = GITHUB_REPOSITORY.split("/")[1];
-
-    const created = await octokit.checks.create({
-      owner,
-      repo,
-      name: "annotations",
-      head_sha: GITHUB_SHA,
-      status: "in_progress",
-      started_at: new Date().toISOString(),
-    });
-    const checkid = created.data.id;
 
     const dir = path.resolve(relpath);
 
@@ -86,22 +72,10 @@ async function run(): Promise<void> {
     const result = await Promise.all(bigpromises);
     const files = result.filter((_) => _ !== null) as vfile.VFile[];
 
-    if (files.length === 0) {
-      await octokit.checks.update({
-        owner,
-        repo,
-        check_run_id: checkid,
-        conclusion: "success",
-        output: {
-          title: "Depbot Report",
-          summary: "Your dependency are all fresh",
-        },
-      });
-      return;
-    }
-
     const report = reporter(files);
     if (report) core.setFailed(report);
+
+    const ctx = github.context;
 
     const annotations: Annotation[] = [];
     for (const file of files) {
@@ -119,17 +93,14 @@ async function run(): Promise<void> {
       }
     }
 
-    await octokit.checks.update({
-      owner,
-      repo,
-      check_run_id: checkid,
-      conclusion: "success",
-      output: {
-        title: "Depbot Report",
-        summary: "Found some errors",
-        annotations,
-      },
-    });
+    if (ctx.payload.pull_request) {
+      const pull = ctx.payload.pull_request;
+      octokit.issues.createComment({
+        ...ctx.repo,
+        issue_number: pull.number,
+        body: JSON.stringify(annotations),
+      });
+    }
   } catch (error) {
     core.error(JSON.stringify(error, null, 2));
     core.setFailed(error.message);

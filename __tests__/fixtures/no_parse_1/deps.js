@@ -1,4 +1,4 @@
-// depbot-ignore-file
+// depsbot-ignore-file
 
 // Copyright 2020-present the denosaurs team. All rights reserved. MIT license.
 
