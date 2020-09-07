@@ -17,11 +17,58 @@
   </p>
 </div>
 
----
+## Usage
 
-> ⚠️ Work in progress. Expect breaking changes.
+### Example Workflow file
 
----
+An example workflow to authenticate with GitHub Platform:
+
+```yaml
+on:
+  schedule:
+    - cron: "0 0 * * *" # run depsbot everyday at 00:00 UTC
+  push:
+  pull_request: # but also check on push and pull requests
+
+jobs:
+  depsbot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@master
+
+      - name: Run depsbot
+        uses: denosaurs/depsbot@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Inputs
+
+| name         | value  | default | description                                                                     |
+| ------------ | ------ | ------- | ------------------------------------------------------------------------------- |
+| github_token | string |         | Token for the repo. Can be passed in using `${{ secrets.GITHUB_TOKEN }}`.       |
+| path         | string | '.'     | If your deno project is in a subdirectory you specify where to run the depsbot. |
+| repo_path    | string | '.'     | Path to your repository in the filesystem.                                      |
+
+### Ignore Comments
+
+If you to let depsbot know that a particular line or file shouldn't be checked you can add:
+
+- `// depsbot-ignore` to ignore the next line
+
+  ```typescript
+  // depsbot-ignore
+  import { red } from "https://deno.land/std@0.51.0/fmt/colors.ts";
+  ```
+
+- `// depsbot-ignore-file` to ignore the entire file
+
+  ```typescript
+  // depsbot-ignore
+  import { red } from "https://deno.land/std@0.51.0/fmt/colors.ts";
+  import { exists } from "https://deno.land/std@0.51.0/fs/mod.ts";
+  ```
 
 ## Maintainers
 
