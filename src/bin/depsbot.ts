@@ -1,4 +1,3 @@
-import fs from "fs";
 import vfile from "vfile";
 import reporter from "vfile-reporter";
 import sort from "vfile-sort";
@@ -12,24 +11,23 @@ import { getAllRegistries } from "../registries";
 
   const registries = getAllRegistries();
 
-  const bigpromises: Promise<vfile.VFile | null>[] = [];
+  const vfiles: Promise<vfile.VFile | null>[] = [];
 
   for (const [fpath, deps] of Object.entries(project)) {
-    const promises: Promise<Diagnostic[]>[] = [];
+    const diagnostics: Promise<Diagnostic[]>[] = [];
     for (const dep of deps) {
       for (const reg of registries) {
         if (reg.belongs(dep)) {
-          promises.push(reg.analyze(dep));
+          diagnostics.push(reg.analyze(dep));
           break;
         }
       }
     }
-    bigpromises.push(
+    vfiles.push(
       (async (): Promise<vfile.VFile | null> => {
-        const result = await Promise.all(promises);
+        const result = await Promise.all(diagnostics);
         if (result.every((_) => _.length === 0)) return null;
-        const contents = await fs.promises.readFile(fpath, "utf-8");
-        const file = vfile({ path: fpath, contents });
+        const file = vfile({ path: fpath });
         for (const diags of result) {
           for (const diag of diags) {
             diag.render(file);
@@ -41,7 +39,9 @@ import { getAllRegistries } from "../registries";
     );
   }
 
-  const vfiles = await Promise.all(bigpromises);
+  const result = await Promise.all(vfiles);
+  const files = result.filter((_) => _ !== null) as vfile.VFile[];
+  const report = reporter(files.filter((_) => _ !== null));
   // eslint-disable-next-line no-console
-  console.error(reporter(vfiles.filter((_) => _ !== null)));
+  if (report) console.error();
 })();
