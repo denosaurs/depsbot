@@ -1,17 +1,20 @@
-name: "Depsbot"
+name: "Deps Bot"
 description: "Check freshness of your deno dependencies"
 author: "Filippo Rossi (qu4k@denosaurs)"
+branding:
+  icon: "box"
+  color: "blue"
 inputs:
   github_token:
     description: 'Token for the repo. Can be passed in using $\{{ secrets.GITHUB_TOKEN }}'
     required: true
   repo_path:
-    description: 'Path of your repository'
-    default: '.'
+    description: "Path of your repository"
+    default: "."
     required: false
   path:
-    description: 'Relative path in your repository'
-    default: '.'
+    description: "Relative path in your repository"
+    default: "."
     required: false
 runs:
   using: "node12"
