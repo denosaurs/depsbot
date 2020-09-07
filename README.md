@@ -65,7 +65,7 @@ If you to let depsbot know that a particular line or file shouldn't be checked y
 - `// depsbot-ignore-file` to ignore the entire file
 
   ```typescript
-  // depsbot-ignore
+  // depsbot-ignore-file
   import { red } from "https://deno.land/std@0.51.0/fmt/colors.ts";
   import { exists } from "https://deno.land/std@0.51.0/fs/mod.ts";
   ```
