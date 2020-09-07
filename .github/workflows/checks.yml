@@ -1,4 +1,4 @@
-name: ci
+name: checks
 
 on:
   pull_request:
@@ -8,11 +8,11 @@ on:
       - "releases/*"
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: |
           yarn
       - run: |
-          yarn all
+          yarn check

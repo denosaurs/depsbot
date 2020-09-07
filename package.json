@@ -4,14 +4,15 @@
   "description": "Check freshness of your deno dependencies",
   "main": "lib/main.js",
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf lib && rimraf dist",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map",
     "test": "jest",
-    "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package"
+    "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package",
+    "check": "yarn test && yarn format-check && yarn lint"
   },
   "bin": {
     "depsbot": "lib/bin/depsbot.js"
