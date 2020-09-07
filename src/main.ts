@@ -2,7 +2,6 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 import path from "path";
-import crypto from "crypto";
 
 import vfile from "vfile";
 import reporter from "vfile-reporter";
@@ -19,10 +18,14 @@ async function run(): Promise<void> {
     const relpath = path.resolve(core.getInput("path"));
     const repopath = path.resolve(core.getInput("repo_path"));
 
-    const octokit = github.getOctokit(GITHUB_TOKEN);
-
     if (!GITHUB_TOKEN) {
       throw new Error("GITHUB_TOKEN must be set");
+    }
+    const octokit = github.getOctokit(GITHUB_TOKEN);
+
+    const { GITHUB_SHA } = process.env;
+    if (!GITHUB_SHA) {
+      throw new Error("GITHUB_SHA must be set");
     }
 
     const dir = path.resolve(relpath);
@@ -62,38 +65,47 @@ async function run(): Promise<void> {
     const result = await Promise.all(vfiles);
     const files = result.filter((_) => _ !== null) as vfile.VFile[];
 
-    const report = reporter(files);
-    if (report) core.setFailed(report);
+    const cliReport = reporter(files);
+    if (cliReport) core.setFailed(cliReport);
 
     const ctx = github.context;
 
+    // build markdown message from vfile reports
     const markdown: string[] = [];
-
     for (const file of files) {
       const abspath = file.path;
       if (!abspath) continue;
       const fpath = path.relative(repopath, abspath);
-      const hash = crypto.createHash("md5").update(fpath).digest("hex");
-      markdown.push(`### ${fpath} - ${hash}`);
-      for (const message of file.messages) {
-        markdown.push(`- ${message.message}`);
-        // annotations.push({
-        //   path: fpath,
-        //   start_line: message.location.start.line,
-        //   end_line: message.location.end.line,
-        //   annotation_level: "failure",
-        //   message: message.message,
-        // });
+      markdown.push(
+        `### [${fpath}](https://github.com/${ctx.repo.owner}/${ctx.repo.repo}/blob/${GITHUB_SHA}/${fpath})`
+      );
+      const list: string[] = [];
+      for (const report of file.messages) {
+        const message: string[] = [];
+
+        // prettify message
+        report.message = report.message.replace("~>", "→");
+
+        message.push(`**${report.ruleId}**: ${report.message}`);
+        message.push(
+          `https://github.com/${ctx.repo.owner}/${ctx.repo.repo}/blob/${GITHUB_SHA}/${fpath}#L${report.location.start.line}-L${report.location.end.line}`
+        );
+        list.push(`- ${message.join("\n")}`);
       }
+      markdown.push(list.join("\n"));
     }
 
+    // create pull request comment
     if (ctx.payload.pull_request) {
       const pull = ctx.payload.pull_request;
-      octokit.issues.createComment({
-        ...ctx.repo,
-        issue_number: pull.number,
-        body: markdown.join("\n"),
-      });
+      if (markdown.length > 0) {
+        markdown.unshift("## Depsbot Report");
+        octokit.issues.createComment({
+          ...ctx.repo,
+          issue_number: pull.number,
+          body: markdown.join("\n\n"),
+        });
+      }
     }
   } catch (error) {
     core.error(JSON.stringify(error, null, 2));
