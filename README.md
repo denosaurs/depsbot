@@ -17,7 +17,7 @@
   </p>
 </div>
 
-## Usage
+## Usage as a GitHub action
 
 ### Example Workflow file
 
@@ -69,6 +69,16 @@ If you to let depsbot know that a particular line or file shouldn't be checked y
   import { red } from "https://deno.land/std@0.51.0/fmt/colors.ts";
   import { exists } from "https://deno.land/std@0.51.0/fs/mod.ts";
   ```
+
+## Usage as a CLI
+
+To use depsbot as a CLI you can install it with:
+
+```bash
+$ yarn global add depsbot
+```
+
+you can also use it for a one time run with npx.
 
 ## Maintainers
 
