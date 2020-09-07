@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import vfile from "vfile";
 import reporter from "vfile-reporter";
 import sort from "vfile-sort";
@@ -43,5 +44,5 @@ import { getAllRegistries } from "../registries";
   const files = result.filter((_) => _ !== null) as vfile.VFile[];
   const report = reporter(files.filter((_) => _ !== null));
   // eslint-disable-next-line no-console
-  if (report) console.error();
+  if (report) console.error(report);
 })();
