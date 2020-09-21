@@ -1,12 +1,13 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 
-import { resolve, relative } from "path";
+import { resolve } from "path";
 
 import reporter from "vfile-reporter";
 
 import { parseProject } from "./deps";
 import { allRegistries } from "./registries";
+import { createMarkdownSummary } from "./runtime/messages";
 import { compileReport } from "./runtime/report";
 
 async function run(): Promise<void> {
@@ -38,29 +39,7 @@ async function run(): Promise<void> {
     const ctx = github.context;
 
     // build markdown message from vfile reports
-    const markdown: string[] = [];
-    for (const file of report.keys()) {
-      const abspath = file.path;
-      if (!abspath) continue;
-      const fpath = relative(repopath, abspath);
-      markdown.push(
-        `### [${fpath}](https://github.com/${ctx.repo.owner}/${ctx.repo.repo}/blob/${GITHUB_SHA}/${fpath})`
-      );
-      const list: string[] = [];
-      for (const raw of file.messages) {
-        const message: string[] = [];
-
-        // prettify message
-        raw.message = raw.message.replace("~>", "→");
-
-        message.push(`**${raw.ruleId}**: ${raw.message}`);
-        message.push(
-          `https://github.com/${ctx.repo.owner}/${ctx.repo.repo}/blob/${GITHUB_SHA}/${fpath}#L${raw.location.start.line}-L${raw.location.end.line}`
-        );
-        list.push(`- ${message.join("\n")}`);
-      }
-      markdown.push(list.join("\n"));
-    }
+    const markdown = createMarkdownSummary(report, repopath);
 
     // create pull request comment
     if (ctx.payload.pull_request) {
