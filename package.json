@@ -11,7 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map",
     "test": "jest",
-    "all": "yarn clean && yarn build && yarn format && yarn lint && yarn package",
+    "all": "yarn clean && yarn format && yarn build && yarn lint && yarn package",
     "check": "yarn test && yarn format-check && yarn lint"
   },
   "bin": {

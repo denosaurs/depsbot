@@ -23,7 +23,7 @@ test("regex", async () => {
   });
 });
 
-test("diagnostics", async () => {
-  const mod = await x.analyze(d("https://deno.land/x/branch@0.0.1/mod.ts"));
-  console.log(mod);
-});
+// test("diagnostics", async () => {
+//   const mod = await x.analyze(d("https://deno.land/x/branch@0.0.1/mod.ts"));
+//   console.log(mod);
+// });

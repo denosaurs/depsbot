@@ -25,7 +25,7 @@ test("regex", async () => {
   });
 });
 
-test("diagnostics", async () => {
-  const mod = await nest.analyze(d("https://x.nest.land/hatcher@0.8.0/mod.ts"));
-  console.log(mod);
-});
+// test("diagnostics", async () => {
+//   const mod = await nest.analyze(d("https://x.nest.land/hatcher@0.8.0/mod.ts"));
+//   console.log(mod);
+// });

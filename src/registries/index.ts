@@ -5,6 +5,6 @@ import { nest } from "./nest";
 
 export * from "./types";
 
-export function getAllRegistries(): Registry[] {
+export function allRegistries(): Registry[] {
   return [x, nest];
 }

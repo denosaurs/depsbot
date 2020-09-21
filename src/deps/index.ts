@@ -3,8 +3,7 @@ import glob from "glob";
 
 import { Dependency, parseModule } from "./parser";
 
-export * from "./parser";
-export type Project = Record<string, Dependency[]>;
+export type Project = Map<string, Dependency[]>;
 export type Module = [string, Dependency[]];
 
 export async function parseProject(root: string): Promise<Project> {
@@ -24,6 +23,8 @@ export async function parseProject(root: string): Promise<Project> {
   }
 
   const modules = await Promise.all(res);
-  const project = Object.fromEntries(modules);
+  const project = new Map(modules);
   return project;
 }
+
+export * from "./parser";
